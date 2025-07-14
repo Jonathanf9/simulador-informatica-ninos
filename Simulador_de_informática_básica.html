@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Informática para Niños</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS para el estilo del simulador */
+        body {
+            font-family: 'Inter', sans-serif; /* Fuente amigable para niños */
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); /* Fondo degradado divertido */
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* Evitar desplazamiento horizontal */
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 20px; /* Esquinas más redondeadas */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+            padding: 30px;
+            width: 100%;
+            max-width: 700px; /* Ancho máximo para mejor legibilidad */
+            box-sizing: border-box;
+            text-align: center;
+            animation: popIn 0.8s ease-out; /* Animación de entrada */
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed #a0d9ff; /* Borde divertido */
+        }
+
+        h1 {
+            color: #4a90e2; /* Azul vibrante */
+            font-size: 2.8em; /* Tamaño de fuente grande */
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #5cb85c; /* Verde amigable */
+            font-size: 2.2em;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: left;
+            background-color: #f0f8ff; /* Fondo suave para la pregunta */
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 5px solid #4a90e2;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilo de botones generales */
+        button {
+            background-color: #ff9800; /* Naranja brillante */
+            color: white;
+            border: none;
+            border-radius: 10px; /* Botones más suaves */
+            padding: 12px 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:hover {
+            background-color: #e68a00; /* Naranja más oscuro al pasar el ratón */
+            transform: translateY(-3px) scale(1.02); /* Efecto de "levantar" */
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Opciones de respuesta */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Una columna para móviles, dos para pantallas más grandes */
+            gap: 12px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .option-btn {
+            background-color: #e0f2f7; /* Azul claro muy suave */
+            color: #34495e;
+            padding: 15px 20px;
+            border: 2px solid #b3e0f2; /* Borde suave */
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+
+        .option-btn:hover:not(.selected):not(.correct):not(.incorrect) {
+            background-color: #cce9f5;
+            border-color: #88d1ee;
+            transform: translateY(-2px);
+        }
+
+        /* Estados de las opciones */
+        .option-btn.selected {
+            background-color: #a7d9f7; /* Azul para la selección */
+            border-color: #4a90e2;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-btn.correct {
+            background-color: #d4edda; /* Verde para correcto */
+            border-color: #28a745;
+            color: #155724;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .option-btn.incorrect {
+            background-color: #f8d7da; /* Rojo para incorrecto */
+            border-color: #dc3545;
+            color: #721c24;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(220, 53, 69, 0.2);
+        }
+
+        /* Retroalimentación */
+        #feedback-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1em;
+            text-align: left;
+            background-color: #fffacd; /* Amarillo claro para feedback */
+            border: 1px solid #ffeeba;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        #feedback-container p.rationale {
+            margin-bottom: 5px;
+            color: #495057;
+            font-style: italic;
+        }
+
+        #feedback-container p.hint {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding-top: 5px;
+            border-top: 1px dashed #ddd;
+        }
+
+        /* Navegación */
+        .navigation-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            font-size: 1.1em;
+        }
+
+        /* Resultados */
+        #results-summary {
+            background-color: #e9f7ef; /* Verde muy claro */
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #28a745; /* Verde de éxito */
+            box-shadow: 0 5px 10px rgba(40, 167, 69, 0.1);
+        }
+
+        #detailed-results .result-item {
+            background-color: #f8f9fa; /* Gris muy claro */
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            text-align: left;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        #detailed-results .result-item h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        #detailed-results .result-item p {
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+
+        #detailed-results .result-item .user-answer {
+            font-weight: bold;
+            color: #007bff; /* Azul para respuesta del usuario */
+        }
+
+        #detailed-results .result-item .correct-answer-text { /* Cambiado de .correct-answer para evitar conflicto */
+            font-weight: bold;
+            color: #28a745; /* Verde para respuesta correcta */
+        }
+
+        #detailed-results .result-item .rationale-text {
+            font-style: italic;
+            color: #495057;
+            font-size: 0.95em;
+            margin-top: 10px;
+            border-top: 1px dashed #eee;
+            padding-top: 8px;
+        }
+
+        /* Adaptabilidad */
+        @media (min-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr; /* Dos columnas en pantallas más grandes */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin-top: 10px;
+            }
+            h1 {
+                font-size: 2.2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            h3 {
+                font-size: 1.5em;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 1.1em;
+            }
+            .option-btn {
+                padding: 12px 15px;
+                font-size: 1em;
+            }
+            .navigation-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💻 ¡Simulador de Informática Básica! 🚀</h1>
+        </header>
+
+        <section id="welcome-screen" class="screen active">
+            <h2>¡Hola, pequeños exploradores de la tecnología!</h2>
+            <p>¿Están listos para aprender sobre las computadoras de una forma súper divertida?</p>
+            <p>¡Vamos a descubrir qué son sus partes y cómo funcionan!</p>
+            <button id="start-quiz-btn">¡Empezar la Aventura! ✨</button>
+        </section>
+
+        <section id="quiz-screen" class="screen">
+            <div id="question-container">
+                <h3 id="question-text"></h3>
+                <div id="options-container" class="options-grid">
+                    <!-- Las opciones se inyectarán aquí con JavaScript -->
+                </div>
+                <div class="navigation-buttons">
+                    <button id="prev-question-btn" class="nav-btn" disabled>⬅️ Anterior</button>
+                    <button id="next-question-btn" class="nav-btn">Siguiente ➡️</button>
+                </div>
+                <div id="feedback-container">
+                    <!-- La retroalimentación se inyectará aquí con JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <section id="results-screen" class="screen">
+            <h2>🎉 ¡Resultados de tu Aventura! 🎉</h2>
+            <p>¡Has terminado el simulador! Aquí puedes ver cómo te fue:</p>
+            <div id="results-summary">
+                <p>Respuestas correctas: <span id="correct-count">0</span> de <span id="total-questions">0</span></p>
+                <p>Tu puntuación: <span id="score">0%</span></p>
+            </div>
+            <div id="detailed-results">
+                <!-- Los resultados detallados se inyectarán aquí con JavaScript -->
+            </div>
+            <button id="restart-quiz-btn">¡Jugar de Nuevo! 🎮</button>
+        </section>
+    </div>
+
+    <script>
+        // JavaScript para la lógica del simulador
+        document.addEventListener('DOMContentLoaded', () => {
+            const questions = [
+                {
+                    question: '¿Qué parte de la computadora te permite ver dibujos, videos y lo que estás haciendo?',
+                    options: [
+                        { text: 'A) Teclado', isCorrect: false, rationale: 'El teclado es para escribir.' },
+                        { text: 'B) Pantalla', isCorrect: true, rationale: '¡Correcto! La pantalla es como la televisión de la computadora.' },
+                        { text: 'C) Ratón', isCorrect: false, rationale: 'El ratón es para mover el puntero.' },
+                        { text: 'D) Impresora', isCorrect: false, rationale: 'La impresora es para sacar copias en papel.' }
+                    ],
+                    hint: 'Piensa en dónde ves tus caricaturas favoritas.'
+                },
+                {
+                    question: '¿Qué usas para escribir letras y números en la computadora?',
+                    options: [
+                        { text: 'A) Altavoces', isCorrect: false, rationale: 'Los altavoces son para escuchar.' },
+                        { text: 'B) Impresora', isCorrect: false, rationale: 'La impresora es para sacar copias en papel.' },
+                        { text: 'C) Teclado', isCorrect: true, rationale: '¡Muy bien! El teclado tiene todas las letras y números para escribir.' },
+                        { text: 'D) Micrófono', isCorrect: false, rationale: 'El micrófono es para grabar tu voz.' }
+                    ],
+                    hint: 'Es como una máquina de escribir, pero para la computadora.'
+                },
+                {
+                    question: '¿Qué dispositivo te ayuda a mover una flechita (cursor) en la pantalla?',
+                    options: [
+                        { text: 'A) Cámara web', isCorrect: false, rationale: 'La cámara web es para verte en videollamadas.' },
+                        { text: 'B) Ratón (Mouse)', isCorrect: true, rationale: '¡Exacto! El ratón te ayuda a apuntar y hacer clic.' },
+                        { text: 'C) Escáner', isCorrect: false, rationale: 'El escáner es para copiar dibujos al computador.' },
+                        { text: 'D) USB', isCorrect: false, rationale: 'El USB es para guardar información.' }
+                    ],
+                    hint: 'Tiene un cable y lo mueves sobre una alfombrilla.'
+                },
+                {
+                    question: '¿Cuál es la parte de la computadora que es como su "cerebro" y piensa muy rápido?',
+                    options: [
+                        { text: 'A) Disco duro', isCorrect: false, rationale: 'El disco duro guarda la información, no piensa.' },
+                        { text: 'B) Memoria RAM', isCorrect: false, rationale: 'La memoria RAM ayuda al cerebro, pero no es el cerebro.' },
+                        { text: 'C) CPU (Unidad Central de Procesamiento)', isCorrect: true, rationale: '¡Lo tienes! La CPU es el cerebro que hace todo el trabajo.' },
+                        { text: 'D) Fuente de poder', isCorrect: false, rationale: 'La fuente de poder le da energía a la computadora.' }
+                    ],
+                    hint: 'Son tres letras, y es muy inteligente.'
+                },
+                {
+                    question: 'Si quieres escuchar música o los sonidos de un juego en la computadora, ¿qué dispositivo necesitas?',
+                    options: [
+                        { text: 'A) Micrófono', isCorrect: false, rationale: 'El micrófono es para que te escuchen a ti.' },
+                        { text: 'B) Altavoces (Parlantes)', isCorrect: true, rationale: '¡Muy bien! Los altavoces hacen que la computadora hable y cante.' },
+                        { text: 'C) Teclado', isCorrect: false, rationale: 'El teclado es para escribir.' },
+                        { text: 'D) Cámara web', isCorrect: false, rationale: 'La cámara web es para ver imágenes.' }
+                    ],
+                    hint: 'Son como los oídos de la computadora.'
+                },
+                {
+                    question: '¿Qué aparato saca copias de tus dibujos o textos del computador al papel?',
+                    options: [
+                        { text: 'A) Escáner', isCorrect: false, rationale: 'El escáner mete dibujos al computador.' },
+                        { text: 'B) Proyector', isCorrect: false, rationale: 'El proyector muestra la imagen grande en la pared.' },
+                        { text: 'C) Impresora', isCorrect: true, rationale: '¡Eso es! La impresora hace que tus trabajos cobren vida en papel.' },
+                        { text: 'D) Altavoces', isCorrect: false, rationale: 'Los altavoces son para escuchar.' }
+                    ],
+                    hint: 'Es la que hace "zzzzzz" y te da una hoja.'
+                },
+                {
+                    question: 'Cuando guardas tus juegos, fotos o tareas en la computadora, ¿dónde se quedan guardados?',
+                    options: [
+                        { text: 'A) En la pantalla', isCorrect: false, rationale: 'La pantalla solo muestra, no guarda.' },
+                        { text: 'B) En el teclado', isCorrect: false, rationale: 'El teclado es para escribir.' },
+                        { text: 'C) En el disco duro (Almacenamiento)', isCorrect: true, rationale: '¡Excelente! El disco duro es como la gran biblioteca de la computadora.' },
+                        { text: 'D) En el ratón', isCorrect: false, rationale: 'El ratón es para mover el puntero.' }
+                    ],
+                    hint: 'Es como una caja muy grande dentro de la computadora.'
+                },
+                {
+                    question: '¿Cómo se llama a los programas, juegos y aplicaciones que instalas en la computadora?',
+                    options: [
+                        { text: 'A) Hardware', isCorrect: false, rationale: 'Hardware son las partes que puedes tocar.' },
+                        { text: 'B) Software', isCorrect: true, rationale: '¡Correcto! El software son los programas que hacen que la computadora haga cosas divertidas.' },
+                        { text: 'C) Cables', isCorrect: false, rationale: 'Los cables conectan las partes.' },
+                        { text: 'D) Archivos', isCorrect: false, rationale: 'Los archivos son lo que creas con el software.' }
+                    ],
+                    hint: 'Es lo que no puedes tocar, pero hace que la computadora funcione.'
+                },
+                {
+                    question: '¿Qué es una computadora portátil?',
+                    options: [
+                        { text: 'A) Una computadora muy grande que no se mueve.', isCorrect: false, rationale: 'Esa es una computadora de escritorio.' },
+                        { text: 'B) Una computadora que puedes llevar a todas partes.', isCorrect: true, rationale: '¡Así es! Es pequeña y tiene batería para que la lleves contigo.' },
+                        { text: 'C) Un teléfono muy grande.', isCorrect: false, rationale: 'Los teléfonos son más pequeños y tienen otras funciones.' },
+                        { text: 'D) Un televisor inteligente.', isCorrect: false, rationale: 'Un televisor inteligente es para ver programas.' }
+                    ],
+                    hint: 'Piensa en una computadora que cabe en tu mochila.'
+                },
+                {
+                    question: '¿Qué es una tableta?',
+                    options: [
+                        { text: 'A) Un libro de papel.', isCorrect: false, rationale: 'Una tableta es un dispositivo electrónico.' },
+                        { text: 'B) Una computadora sin pantalla.', isCorrect: false, rationale: 'Una tableta tiene pantalla táctil.' },
+                        { text: 'C) Un dispositivo con pantalla táctil, como un teléfono grande.', isCorrect: true, rationale: '¡Exacto! Puedes tocar la pantalla para usarla, como un teléfono grande.' },
+                        { text: 'D) Un tipo de ratón de computadora.', isCorrect: false, rationale: 'El ratón es para mover el cursor.' }
+                    ],
+                    hint: 'Es como un teléfono muy grande, pero sin botones.'
+                }
+            ];
+
+            let currentQuestionIndex = 0;
+            let userAnswers = new Array(questions.length).fill(null); // Almacena el índice de la opción seleccionada
+            let correctAnswersCount = 0;
+
+            // Elementos del DOM
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const quizScreen = document.getElementById('quiz-screen');
+            const resultsScreen = document.getElementById('results-screen');
+
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const prevQuestionBtn = document.getElementById('prev-question-btn');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            const feedbackContainer = document.getElementById('feedback-container');
+
+            const correctCountSpan = document.getElementById('correct-count');
+            const totalQuestionsSpan = document.getElementById('total-questions');
+            const scoreSpan = document.getElementById('score');
+            const detailedResultsDiv = document.getElementById('detailed-results');
+            const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+            // --- Funciones del Simulador ---
+
+            /**
+             * Muestra la pantalla especificada y oculta las demás.
+             * @param {string} screenId - El ID de la pantalla a mostrar.
+             */
+            function showScreen(screenId) {
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                document.getElementById(screenId).classList.add('active');
+            }
+
+            /**
+             * Carga la pregunta actual en la interfaz.
+             */
+            function loadQuestion() {
+                const questionData = questions[currentQuestionIndex];
+                questionText.textContent = `${currentQuestionIndex + 1}. ${questionData.question}`;
+                optionsContainer.innerHTML = ''; // Limpia opciones anteriores
+                feedbackContainer.innerHTML = ''; // Limpia retroalimentación anterior
+
+                questionData.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.classList.add('option-btn');
+                    button.textContent = option.text;
+                    button.dataset.index = index; // Guarda el índice de la opción
+                    button.addEventListener('click', () => selectOption(index));
+                    optionsContainer.appendChild(button);
+                });
+
+                // Restaura la selección del usuario si ya respondió esta pregunta
+                if (userAnswers[currentQuestionIndex] !== null) {
+                    const selectedOptionIndex = userAnswers[currentQuestionIndex];
+                    const selectedButton = optionsContainer.querySelector(`[data-index="${selectedOptionIndex}"]`);
+                    if (selectedButton) {
+                        selectedButton.classList.add('selected');
+                        // Muestra retroalimentación si ya se respondió y se volvió a la pregunta
+                        showFeedback(questions[currentQuestionIndex], selectedOptionIndex);
+                    }
+                }
+
+                updateNavigationButtons();
+                disableOptionsIfAnswered();
+            }
+
+            /**
+             * Maneja la selección de una opción por parte del usuario.
+             * @param {number} selectedIndex - El índice de la opción seleccionada.
+             */
+            function selectOption(selectedIndex) {
+                // Si la pregunta ya fue respondida, no permitir cambiar la respuesta
+                if (userAnswers[currentQuestionIndex] !== null) {
+                    return;
+                }
+
+                userAnswers[currentQuestionIndex] = selectedIndex; // Guarda la respuesta del usuario
+
+                // Deshabilita todas las opciones para la pregunta actual
+                document.querySelectorAll('.option-btn').forEach(button => {
+                    button.disabled = true; // Deshabilita los botones para evitar clicks adicionales
+                    button.classList.remove('selected'); // Limpia cualquier selección previa visual
+                });
+
+                const selectedButton = optionsContainer.querySelector(`[data-index="${selectedIndex}"]`);
+                if (selectedButton) { // Asegura que el botón exista
+                    selectedButton.classList.add('selected');
+                }
+
+                // Muestra retroalimentación
+                showFeedback(questions[currentQuestionIndex], selectedIndex);
+                updateNavigationButtons(); // Habilita "Siguiente" si es la última pregunta y ya se respondió
+            }
+
+            /**
+             * Muestra la retroalimentación (razón y pista) para la pregunta respondida.
+             * @param {object} questionData - Los datos de la pregunta actual.
+             * @param {number} selectedIndex - El índice de la opción seleccionada por el usuario.
+             */
+            function showFeedback(questionData, selectedIndex) {
+                feedbackContainer.innerHTML = ''; // Limpia cualquier feedback previo
+
+                const selectedOption = questionData.options[selectedIndex];
+                const selectedButton = optionsContainer.querySelector(`[data-index="${selectedIndex}"]`);
+
+                if (selectedOption.isCorrect) {
+                    if (selectedButton) selectedButton.classList.add('correct');
+                    const correctMessage = document.createElement('p');
+                    correctMessage.innerHTML = '¡Genial! ¡Respuesta Correcta! 🎉';
+                    correctMessage.style.color = '#28a745';
+                    correctMessage.style.fontWeight = 'bold';
+                    feedbackContainer.appendChild(correctMessage);
+                } else {
+                    if (selectedButton) selectedButton.classList.add('incorrect');
+                    const incorrectMessage = document.createElement('p');
+                    incorrectMessage.innerHTML = '¡Ups! Esa no es la respuesta correcta. 🙁';
+                    incorrectMessage.style.color = '#dc3545';
+                    incorrectMessage.style.fontWeight = 'bold';
+                    feedbackContainer.appendChild(incorrectMessage);
+
+                    const correctAnswer = questionData.options.find(opt => opt.isCorrect);
+                    const correctAnswerP = document.createElement('p');
+                    correctAnswerP.classList.add('correct-answer-feedback');
+                    correctAnswerP.innerHTML = `La respuesta correcta era: <strong>${correctAnswer.text}</strong>`;
+                    feedbackContainer.appendChild(correctAnswerP);
+
+                    // Resalta la respuesta correcta si el usuario se equivocó
+                    const correctOptionButton = optionsContainer.querySelector(`[data-index="${questionData.options.indexOf(correctAnswer)}"]`);
+                    if (correctOptionButton) {
+                        correctOptionButton.classList.add('correct');
+                    }
+                }
+
+                const rationaleP = document.createElement('p');
+                rationaleP.classList.add('rationale');
+                rationaleP.textContent = `Razón: ${selectedOption.rationale}`;
+                feedbackContainer.appendChild(rationaleP);
+
+                const hintP = document.createElement('p');
+                hintP.classList.add('hint');
+                hintP.textContent = `Pista: ${questionData.hint}`;
+                feedbackContainer.appendChild(hintP);
+            }
+
+            /**
+             * Deshabilita las opciones de respuesta si la pregunta ya fue respondida.
+             * También aplica las clases de estilo 'correct'/'incorrect'/'selected'.
+             */
+            function disableOptionsIfAnswered() {
+                if (userAnswers[currentQuestionIndex] !== null) {
+                    document.querySelectorAll('.option-btn').forEach(button => {
+                        button.disabled = true;
+                        const optionIndex = parseInt(button.dataset.index);
+                        const questionData = questions[currentQuestionIndex];
+
+                        if (optionIndex === userAnswers[currentQuestionIndex]) {
+                            button.classList.add('selected');
+                            if (questionData.options[optionIndex].isCorrect) {
+                                button.classList.add('correct');
+                            } else {
+                                button.classList.add('incorrect');
+                            }
+                        } else if (questionData.options[optionIndex].isCorrect) {
+                            // Muestra la respuesta correcta si el usuario se equivocó y la pregunta ya fue respondida
+                            button.classList.add('correct');
+                        }
+                    });
+                }
+            }
+
+            /**
+             * Actualiza el estado de los botones de navegación (Anterior/Siguiente).
+             */
+            function updateNavigationButtons() {
+                prevQuestionBtn.disabled = currentQuestionIndex === 0;
+                // El botón "Siguiente" se habilita si ya se respondió la pregunta actual
+                // O si es la última pregunta (para poder ver resultados)
+                nextQuestionBtn.disabled = userAnswers[currentQuestionIndex] === null && currentQuestionIndex < questions.length - 1;
+
+                if (currentQuestionIndex === questions.length - 1) {
+                    nextQuestionBtn.textContent = '¡Ver Mis Resultados! 🏆';
+                    nextQuestionBtn.style.backgroundColor = '#5cb85c'; /* Verde para resultados */
+                    nextQuestionBtn.style.boxShadow = '0 4px 8px rgba(92, 184, 92, 0.3)';
+                } else {
+                    nextQuestionBtn.textContent = 'Siguiente ➡️';
+                    nextQuestionBtn.style.backgroundColor = '#ff9800'; /* Naranja normal */
+                    nextQuestionBtn.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+                }
+            }
+
+            /**
+             * Calcula los resultados finales del simulador y los muestra.
+             */
+            function calculateResults() {
+                correctAnswersCount = 0;
+                detailedResultsDiv.innerHTML = '';
+
+                questions.forEach((q, index) => {
+                    const userAnswerIndex = userAnswers[index];
+                    const userAnswerText = userAnswerIndex !== null ? q.options[userAnswerIndex].text : 'No respondida';
+                    const correctAnswer = q.options.find(opt => opt.isCorrect);
+
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('result-item');
+
+                    const questionHeading = document.createElement('h4');
+                    questionHeading.textContent = `Pregunta ${index + 1}: ${q.question}`;
+                    resultItem.appendChild(questionHeading);
+
+                    const userAnswerP = document.createElement('p');
+                    userAnswerP.classList.add('user-answer');
+                    userAnswerP.textContent = `Tu respuesta: ${userAnswerText}`;
+                    resultItem.appendChild(userAnswerP);
+
+                    const correctAnswerP = document.createElement('p');
+                    correctAnswerP.classList.add('correct-answer-text');
+                    correctAnswerP.textContent = `Respuesta correcta: ${correctAnswer.text}`;
+                    resultItem.appendChild(correctAnswerP);
+
+                    const rationaleP = document.createElement('p');
+                    rationaleP.classList.add('rationale-text');
+                    rationaleP.textContent = `Explicación: ${correctAnswer.rationale}`;
+                    resultItem.appendChild(rationaleP);
+
+                    if (userAnswerIndex !== null && q.options[userAnswerIndex].isCorrect) {
+                        correctAnswersCount++;
+                        resultItem.style.borderLeft = '5px solid #28a745'; // Borde verde para correctas
+                    } else {
+                        resultItem.style.borderLeft = '5px solid #dc3545'; // Borde rojo para incorrectas
+                    }
+
+                    detailedResultsDiv.appendChild(resultItem);
+                });
+
+                const percentageScore = (correctAnswersCount / questions.length) * 100;
+                correctCountSpan.textContent = correctAnswersCount;
+                totalQuestionsSpan.textContent = questions.length;
+                scoreSpan.textContent = `${percentageScore.toFixed(0)}%`; // Redondear a número entero
+            }
+
+            // --- Event Listeners ---
+
+            startQuizBtn.addEventListener('click', () => {
+                showScreen('quiz-screen');
+                currentQuestionIndex = 0;
+                userAnswers.fill(null); // Resetear respuestas
+                correctAnswersCount = 0; // Resetear contador de correctas
+                loadQuestion();
+            });
+
+            prevQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    loadQuestion();
+                }
+            });
+
+            nextQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    loadQuestion();
+                } else {
+                    // Si es la última pregunta y se presiona "Siguiente"
+                    calculateResults();
+                    showScreen('results-screen');
+                }
+            });
+
+            restartQuizBtn.addEventListener('click', () => {
+                showScreen('welcome-screen');
+                currentQuestionIndex = 0;
+                userAnswers.fill(null);
+                correctAnswersCount = 0;
+            });
+
+            // Cargar la pantalla de bienvenida al inicio
+            showScreen('welcome-screen');
+        });
+    </script>
+</body>
+</html>
